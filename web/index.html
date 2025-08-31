@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SAMURAI</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; margin: 0; background: #0b0f19; color: #e6e6e6; }
+    .app { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .row { display: flex; gap: 8px; }
+    #log { height: 60vh; overflow: auto; background: #0f172a; border: 1px solid #1f2937; padding: 12px; border-radius: 8px; }
+    .msg { padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; }
+    .user { background: #1f2937; }
+    .assistant { background: #111827; }
+    input, select, button { background: #0f172a; color: #e6e6e6; border: 1px solid #334155; padding: 8px 10px; border-radius: 8px; }
+    button { cursor: pointer; }
+  </style>
+  <script>
+    async function sendChat(stream) {
+      const message = document.getElementById('message').value.trim();
+      if (!message) return;
+      const tool = document.getElementById('tool').value || null;
+      const sessionId = document.getElementById('session').value || 'default';
+      const log = document.getElementById('log');
+      const add = (cls, txt) => {
+        const div = document.createElement('div');
+        div.className = 'msg ' + cls;
+        div.textContent = txt;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+      };
+      add('user', message);
+      document.getElementById('message').value = '';
+      if (stream) {
+        const resp = await fetch('/api/chat/stream', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ session_id: sessionId, message, options: { tool } }) });
+        const reader = resp.body.getReader();
+        let buffer = '';
+        let assistant = '';
+        const decoder = new TextDecoder();
+        let node = document.createElement('div'); node.className = 'msg assistant'; node.textContent = '...'; log.appendChild(node);
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop();
+          for (const part of parts) {
+            if (!part.startsWith('data: ')) continue;
+            const jsonStr = part.slice(6);
+            try {
+              const obj = JSON.parse(jsonStr);
+              if (obj.chunk) { assistant += obj.chunk; node.textContent = assistant; }
+            } catch {}
+          }
+          log.scrollTop = log.scrollHeight;
+        }
+      } else {
+        const resp = await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ session_id: sessionId, message, options: { tool } }) });
+        const data = await resp.json();
+        add('assistant', data.reply || JSON.stringify(data));
+      }
+    }
+    async function loadTools() {
+      const resp = await fetch('/api/tools');
+      const data = await resp.json();
+      const sel = document.getElementById('tool');
+      sel.innerHTML = '<option value="">(no tool)</option>';
+      for (const t of data.tools) {
+        const opt = document.createElement('option');
+        opt.value = t.name; opt.textContent = t.name + ' - ' + t.description;
+        sel.appendChild(opt);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', loadTools);
+  </script>
+</head>
+<body>
+  <div class="app">
+    <h2>SAMURAI</h2>
+    <div class="row" style="margin-bottom:8px">
+      <input id="session" placeholder="session id" value="default" style="width:200px" />
+      <select id="tool" style="flex:1"></select>
+    </div>
+    <div id="log"></div>
+    <div class="row" style="margin-top:8px">
+      <input id="message" placeholder="Type your message..." style="flex:1" onkeydown="if(event.key==='Enter'){sendChat(true)}" />
+      <button onclick="sendChat(true)">Send (stream)</button>
+      <button onclick="sendChat(false)">Send</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[
+  {
+    "role": "user",
+    "content": "Hello SAMURAI",
+    "name": null
+  },
+  {
+    "role": "assistant",
+    "content": "[HF-PLACEHOLDER] IARUMAS olleH",
+    "name": null
+  }
+]
