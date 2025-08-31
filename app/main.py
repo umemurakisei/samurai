@@ -29,8 +29,9 @@ app.add_middleware(
 )
 
 
-# Static web UI under /app to avoid colliding with /api
+# Static web UI under /app and /samurai for path-based hosting parity
 app.mount("/app", StaticFiles(directory="/workspace/web", html=True), name="web")
+app.mount("/samurai", StaticFiles(directory="/workspace/web", html=True), name="web_samurai")
 
 
 # Core services

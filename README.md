@@ -78,4 +78,15 @@ Star Domain / スターサーバー DNS 設定（samurai.sui-tool.com）
   - `web/index.html` の `<meta name="api-base" content="https://<your-api-host>" />` を設定。
   - CORS は `CORS_ALLOW_ORIGINS` 環境変数で `https://samurai.sui-tool.com` を許可済み。
 - 反映には最大 24 時間。確認: `https://samurai.sui-tool.com/app` と `/api/health`（API ホスト側）
+
+スターサーバーでパス配信（sui-tool.com/samurai）
+--------------------------------------------
+
+- フロント（静的）: `web/` の中身をスターサーバーの公開ディレクトリにアップロードし、`/samurai` 配下で参照できるように配置。
+  - 例: ドキュメントルート直下に `samurai/` ディレクトリを作成し、その中へ `web/` のファイルをそのまま配置。
+- API は外部ホスト（Render/Fly等）を使用:
+  - 何も設定しない場合、UI は現在のオリジンを API ベースとして使います（`index.html` で `api-base` 未設定時は `window.location.origin`）。
+  - API が別ホストの場合は、`index.html` の `<meta name="api-base" content="https://<api-host>" />` を設定。
+  - CORS は `CORS_ALLOW_ORIGINS` に `https://sui-tool.com` を含めてください（既定で追加済み）。
+- 動作確認: `https://sui-tool.com/samurai` でUI、APIホストの `/api/health` が稼働していること。
 # samurai

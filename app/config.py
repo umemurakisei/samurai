@@ -48,7 +48,7 @@ class Settings:
 
 		cors = os.getenv(
 			"CORS_ALLOW_ORIGINS",
-			"http://localhost:8000,https://samurai.sui-tool.com",
+			"http://localhost:8000,https://samurai.sui-tool.com,https://sui-tool.com",
 		)
 		self.cors_allow_origins = [o.strip() for o in cors.split(",") if o.strip()]
 

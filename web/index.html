@@ -17,7 +17,9 @@
     button { cursor: pointer; }
   </style>
   <script>
-    const apiBase = (document.querySelector('meta[name="api-base"]')?.content || '').replace(/\/$/, '');
+    // If no api-base provided, derive from current origin (works when API is proxied)
+    const metaBase = (document.querySelector('meta[name="api-base"]')?.content || '').trim();
+    const apiBase = (metaBase || window.location.origin).replace(/\/$/, '');
     async function sendChat(stream) {
       const message = document.getElementById('message').value.trim();
       if (!message) return;
