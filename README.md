@@ -43,4 +43,39 @@ Notes
 - Providers in `app/llm/providers`.
 - Tools in `app/tools`.
 - Memory in `app/memory`.
+
+Deployment
+----------
+
+Docker (generic):
+
+```bash
+docker build -t samurai .
+docker run -p 8000:8000 --env-file .env samurai
+```
+
+Render.com:
+
+1) Push this repo to GitHub. 2) Import in Render using `render.yaml`. 3) Add custom domain `samurai.sui-tool.com` in Render dashboard and follow its DNS instructions (usually a CNAME to a Render hostname). 4) Set env vars.
+
+Fly.io:
+
+```bash
+flyctl launch --no-deploy
+flyctl deploy
+flyctl certs add samurai.sui-tool.com
+```
+
+Star Domain / スターサーバー DNS 設定（samurai.sui-tool.com）
+-----------------------------------------------
+
+- ネームサーバー: NS1.STAR-DOMAIN.JP / NS2.STAR-DOMAIN.JP / NS3.STAR-DOMAIN.JP が設定済みであることを確認。
+- サブドメイン追加（スターサーバー管理画面 → サブドメイン設定）で `samurai` を作成。
+- API を Render/Fly など外部で動かす場合:
+  - Render: カスタムドメインに `samurai.sui-tool.com` を追加 → 指定の CNAME をスタードメインDNSに登録（ホスト名: samurai, 種別: CNAME, 値: 指示のホスト名）。
+  - Fly.io: `flyctl certs add samurai.sui-tool.com` 後の指示に従い、A/AAAA または CNAME を登録。
+- スターサーバーで静的ファイルを配信し、API は外部に向ける場合:
+  - `web/index.html` の `<meta name="api-base" content="https://<your-api-host>" />` を設定。
+  - CORS は `CORS_ALLOW_ORIGINS` 環境変数で `https://samurai.sui-tool.com` を許可済み。
+- 反映には最大 24 時間。確認: `https://samurai.sui-tool.com/app` と `/api/health`（API ホスト側）
 # samurai

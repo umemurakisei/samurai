@@ -22,6 +22,8 @@ class Settings:
 	openrouter_api_key: str
 	hf_api_key: str
 	ollama_base_url: str
+	# CORS
+	cors_allow_origins: List[str]
 
 	def __init__(self) -> None:
 		self.app_name = os.getenv("SAMURAI_APP_NAME", "SAMURAI")
@@ -43,6 +45,12 @@ class Settings:
 		self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
 		self.hf_api_key = os.getenv("HF_API_KEY", "")
 		self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+		cors = os.getenv(
+			"CORS_ALLOW_ORIGINS",
+			"http://localhost:8000,https://samurai.sui-tool.com",
+		)
+		self.cors_allow_origins = [o.strip() for o in cors.split(",") if o.strip()]
 
 
 def load_settings() -> Settings:

@@ -8,6 +8,7 @@ import orjson
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
 from .config import load_settings
@@ -19,6 +20,13 @@ from .memory.memory import FileMemoryStore
 
 settings = load_settings()
 app = FastAPI(title=settings.app_name)
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=settings.cors_allow_origins,
+	allow_methods=["*"],
+	allow_headers=["*"],
+	allow_credentials=True,
+)
 
 
 # Static web UI under /app to avoid colliding with /api
